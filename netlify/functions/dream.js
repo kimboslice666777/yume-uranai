@@ -1,4 +1,4 @@
-const { Anthropic } = require('@anthropic-ai/sdk');
+const axios = require('axios');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -32,37 +32,42 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        console.log('Initializing Anthropic client...');
-        const anthropic = new Anthropic({
-            apiKey: apiKey,
-        });
+        console.log('Sending request to Claude API via Axios...');
 
-        console.log('Sending request to Claude API...');
-        const completion = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20240620",
-            max_tokens: 300,
-            temperature: 0.7,
-            system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
-      
-      {
-        "meaning": "夢の意味（100文字以内）",
-        "fortune": 3,
-        "advice": "アドバイス（50文字以内）",
-        "category": "AI診断"
-      }`,
-            messages: [
-                {
-                    "role": "user",
-                    "content": `キーワード: ${keyword}`
-                }
-            ]
-        });
+        const response = await axios.post(
+            'https://api.anthropic.com/v1/messages',
+            {
+                model: "claude-3-5-sonnet-20240620",
+                max_tokens: 300,
+                temperature: 0.7,
+                system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
+        
+        {
+          "meaning": "夢の意味（100文字以内）",
+          "fortune": 3,
+          "advice": "アドバイス（50文字以内）",
+          "category": "AI診断"
+        }`,
+                messages: [
+                    {
+                        "role": "user",
+                        "content": `キーワード: ${keyword}`
+                    }
+                ]
+            },
+            {
+                headers: {
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json'
+                },
+                timeout: 9000 // 9s timeout (Netlify limit is 10s)
+            }
+        );
 
-        console.log('Claude API response received.');
-        const content = completion.content[0].text;
+        console.log('Claude API response received via Axios.');
+        const content = response.data.content[0].text;
 
-        // Parse JSON from Claude's response to ensure it's valid
-        // Note: Claude typically returns pure JSON as requested, but sometimes adds markdown blocks
         const jsonStr = content.replace(/```json\n|\n```/g, '').trim();
         const result = JSON.parse(jsonStr);
 
@@ -75,13 +80,18 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Detailed Error:', error);
+        console.error('Detailed Error:', error.message);
+
+        // Axios error details
+        const errorDetails = error.response ? error.response.data : error.message;
+        console.error('Axios Error Details:', JSON.stringify(errorDetails));
+
         return {
             statusCode: 500,
             body: JSON.stringify({
-                error: 'AI Processing Error',
+                error: 'AI Processing Error (Axios)',
                 message: error.message,
-                stack: error.stack
+                details: errorDetails
             }),
         };
     }
