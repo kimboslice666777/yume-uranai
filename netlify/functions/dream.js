@@ -29,13 +29,13 @@ exports.handler = async (event, context) => {
 
     const requestBody = JSON.stringify({
         model: "claude-3-haiku-20240307",
-        max_tokens: 1000,
+        max_tokens: 1500,
         temperature: 0.7,
         system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
     {
-      "meaning": "夢の意味（100文字以内）",
+      "meaning": "夢の意味（500文字程度で詳しく）",
       "fortune": 3,
-      "advice": "アドバイス（50文字以内）",
+      "advice": "アドバイス（100文字程度）",
       "category": "AI診断"
     }`,
         messages: [
