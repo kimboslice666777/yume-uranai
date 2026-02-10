@@ -1,4 +1,4 @@
-const axios = require('axios');
+const https = require('https');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -15,84 +15,106 @@ exports.handler = async (event, context) => {
         };
     }
 
-    // Logging for debugging
-    console.log('Function invoked with keyword:', keyword);
-
     // API Key check
     const apiKey = process.env.CLAUDE_API_KEY;
     if (!apiKey) {
-        console.error('Critical Error: CLAUDE_API_KEY is missing in environment variables.');
+        console.error('Critical Error: CLAUDE_API_KEY is missing.');
         return {
             statusCode: 500,
             body: JSON.stringify({
-                error: 'Configuration Error: CLAUDE_API_KEY is not set in Netlify.',
-                details: 'Please check Site Configuration > Environment variables.'
+                error: 'Configuration Error: CLAUDE_API_KEY is not set in Netlify.'
             }),
         };
     }
 
-    try {
-        console.log('Sending request to Claude API via Axios...');
-
-        const response = await axios.post(
-            'https://api.anthropic.com/v1/messages',
+    const requestBody = JSON.stringify({
+        model: "claude-3-5-sonnet-20240620",
+        max_tokens: 300,
+        temperature: 0.7,
+        system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
+    {
+      "meaning": "夢の意味（100文字以内）",
+      "fortune": 3,
+      "advice": "アドバイス（50文字以内）",
+      "category": "AI診断"
+    }`,
+        messages: [
             {
-                model: "claude-3-5-sonnet-20240620",
-                max_tokens: 300,
-                temperature: 0.7,
-                system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
-        
-        {
-          "meaning": "夢の意味（100文字以内）",
-          "fortune": 3,
-          "advice": "アドバイス（50文字以内）",
-          "category": "AI診断"
-        }`,
-                messages: [
-                    {
-                        "role": "user",
-                        "content": `キーワード: ${keyword}`
-                    }
-                ]
-            },
-            {
-                headers: {
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
-                    'content-type': 'application/json'
-                },
-                timeout: 9000 // 9s timeout (Netlify limit is 10s)
+                "role": "user",
+                "content": `キーワード: ${keyword}`
             }
-        );
+        ]
+    });
 
-        console.log('Claude API response received via Axios.');
-        const content = response.data.content[0].text;
+    const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+            'content-length': Buffer.byteLength(requestBody)
+        },
+        timeout: 9000 // 9s timeout
+    };
 
-        const jsonStr = content.replace(/```json\n|\n```/g, '').trim();
-        const result = JSON.parse(jsonStr);
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+            let data = '';
 
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(result),
-        };
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
 
-    } catch (error) {
-        console.error('Detailed Error:', error.message);
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        const content = parsedData.content[0].text;
+                        const jsonStr = content.replace(/```json\n|\n```/g, '').trim();
+                        const result = JSON.parse(jsonStr);
 
-        // Axios error details
-        const errorDetails = error.response ? error.response.data : error.message;
-        console.error('Axios Error Details:', JSON.stringify(errorDetails));
+                        resolve({
+                            statusCode: 200,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(result)
+                        });
+                    } catch (e) {
+                        console.error('JSON Parse Error:', e);
+                        resolve({
+                            statusCode: 500,
+                            body: JSON.stringify({ error: 'JSON Parse Error', details: e.message, raw: data })
+                        });
+                    }
+                } else {
+                    console.error(`API Error: ${res.statusCode}`, data);
+                    resolve({
+                        statusCode: res.statusCode,
+                        body: JSON.stringify({ error: `API Error: ${res.statusCode}`, details: data })
+                    });
+                }
+            });
+        });
 
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                error: 'AI Processing Error (Axios)',
-                message: error.message,
-                details: errorDetails
-            }),
-        };
-    }
+        req.on('error', (e) => {
+            console.error('Network Error:', e);
+            resolve({
+                statusCode: 500,
+                body: JSON.stringify({ error: 'Network Error', details: e.message })
+            });
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            console.error('Request Timeout');
+            resolve({
+                statusCode: 504,
+                body: JSON.stringify({ error: 'Request Timeout', details: 'Claude API took too long to respond.' })
+            });
+        });
+
+        req.write(requestBody);
+        req.end();
+    });
 };
