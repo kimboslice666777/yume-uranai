@@ -61,13 +61,14 @@ exports.handler = async (event, context) => {
 
     return new Promise((resolve, reject) => {
         const req = https.request(options, (res) => {
-            let data = '';
+            const chunks = [];
 
             res.on('data', (chunk) => {
-                data += chunk;
+                chunks.push(chunk);
             });
 
             res.on('end', () => {
+                const data = Buffer.concat(chunks).toString();
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     try {
                         const parsedData = JSON.parse(data);
