@@ -32,22 +32,20 @@ exports.handler = async (event, context) => {
 
         const completion = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20240620",
-            max_tokens: 1000,
+            max_tokens: 300,
             temperature: 0.7,
-            system: `あなたは夢占いの専門家です。ユーザーから提供された夢のキーワードや状況に基づいて、その夢の意味、運勢（1〜5の星評価）、そしてアドバイスを提供してください。
-      
-      レスポンスは必ず以下のJSON形式で返してください。余計な説明は不要です。
+            system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
       
       {
-        "meaning": "夢の意味を200文字以内で、神秘的かつ分かりやすく。",
-        "fortune": 3, // 1〜5の整数
-        "advice": "具体的なアドバイスを100文字以内で。",
+        "meaning": "夢の意味（100文字以内）",
+        "fortune": 3,
+        "advice": "アドバイス（50文字以内）",
         "category": "AI診断"
       }`,
             messages: [
                 {
                     "role": "user",
-                    "content": `夢のキーワード: ${keyword}`
+                    "content": `キーワード: ${keyword}`
                 }
             ]
         });
