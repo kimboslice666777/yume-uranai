@@ -28,7 +28,7 @@ exports.handler = async (event, context) => {
     }
 
     const requestBody = JSON.stringify({
-        model: "claude-3-haiku-20240307",
+        model: "claude-sonnet-4-5-20250929",
         max_tokens: 1500,
         temperature: 0.7,
         system: `あなたは夢占いの専門家です。簡潔に JSON で答えてください。
