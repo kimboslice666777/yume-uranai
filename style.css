@@ -1,0 +1,399 @@
+/* ========================================
+   夢占い - Dream Interpreter Styles
+   ======================================== */
+
+/* --- Reset & Base --- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 30%, #0d1b3e 60%, #0a0a1a 100%);
+  color: #e0dce8;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* --- Stars Background --- */
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  animation: twinkle var(--duration) ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* --- Container --- */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header --- */
+.header {
+  text-align: center;
+  padding: 3rem 0 2rem;
+  position: relative;
+}
+
+.moon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffeebb, #f0c040 40%, #d4a017 100%);
+  margin: 0 auto 1.5rem;
+  box-shadow:
+    0 0 30px rgba(240, 192, 64, 0.4),
+    0 0 80px rgba(240, 192, 64, 0.15);
+  animation: moonGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes moonGlow {
+  0% { box-shadow: 0 0 30px rgba(240, 192, 64, 0.4), 0 0 80px rgba(240, 192, 64, 0.15); }
+  100% { box-shadow: 0 0 50px rgba(240, 192, 64, 0.6), 0 0 120px rgba(240, 192, 64, 0.25); }
+}
+
+.title {
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f0c040 0%, #ffeebb 50%, #d4a017 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #9990b8;
+  letter-spacing: 0.08em;
+}
+
+/* --- Main --- */
+.main {
+  flex: 1;
+}
+
+/* --- Search Card --- */
+.search-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease;
+}
+
+.search-card:focus-within {
+  border-color: rgba(240, 192, 64, 0.3);
+}
+
+.input-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #9990b8;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.dream-input {
+  flex: 1;
+  padding: 0.9rem 1.2rem;
+  font-size: 1rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #e0dce8;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.dream-input::placeholder {
+  color: #6a6080;
+}
+
+.dream-input:focus {
+  border-color: rgba(240, 192, 64, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 20px rgba(240, 192, 64, 0.08);
+}
+
+.search-btn {
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 500;
+  background: linear-gradient(135deg, #d4a017 0%, #f0c040 100%);
+  color: #1a0a2e;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(240, 192, 64, 0.35);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.search-btn:hover .btn-icon {
+  transform: rotate(72deg);
+}
+
+/* --- Suggestions --- */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.suggestion-tag {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: #9990b8;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.suggestion-tag:hover {
+  background: rgba(240, 192, 64, 0.1);
+  border-color: rgba(240, 192, 64, 0.3);
+  color: #f0c040;
+}
+
+/* --- Result Area --- */
+.result-area {
+  min-height: 100px;
+}
+
+/* --- Result Card --- */
+.result-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  animation: slideUp 0.5s ease-out;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-keyword {
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f0c040, #ffeebb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem;
+}
+
+.result-category {
+  font-size: 0.8rem;
+  color: #7a70a0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+
+.result-divider {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, #f0c040, transparent);
+  margin-bottom: 1.2rem;
+  border: none;
+}
+
+.result-meaning {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #c8c0e0;
+  margin-bottom: 1.5rem;
+}
+
+.result-fortune {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  background: rgba(240, 192, 64, 0.05);
+  border: 1px solid rgba(240, 192, 64, 0.1);
+  border-radius: 12px;
+  margin-bottom: 1.2rem;
+}
+
+.fortune-label {
+  font-size: 0.8rem;
+  color: #9990b8;
+  white-space: nowrap;
+}
+
+.fortune-stars {
+  color: #f0c040;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+}
+
+.fortune-empty {
+  color: #3a3050;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+}
+
+.result-advice {
+  display: flex;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  background: rgba(100, 80, 200, 0.06);
+  border: 1px solid rgba(100, 80, 200, 0.12);
+  border-radius: 12px;
+}
+
+.advice-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.advice-text {
+  font-size: 0.88rem;
+  color: #a898d0;
+  line-height: 1.7;
+}
+
+/* --- No Result --- */
+.no-result {
+  text-align: center;
+  padding: 3rem 2rem;
+  animation: slideUp 0.5s ease-out;
+}
+
+.no-result-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-result-title {
+  font-size: 1.1rem;
+  color: #9990b8;
+  margin-bottom: 0.5rem;
+}
+
+.no-result-text {
+  font-size: 0.85rem;
+  color: #6a6080;
+  line-height: 1.6;
+}
+
+/* --- Footer --- */
+.footer {
+  text-align: center;
+  padding: 3rem 0 1rem;
+  font-size: 0.75rem;
+  color: #4a4060;
+  letter-spacing: 0.05em;
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .search-card {
+    padding: 1.5rem;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .search-btn {
+    justify-content: center;
+  }
+
+  .result-card {
+    padding: 1.5rem;
+  }
+
+  .result-keyword {
+    font-size: 1.3rem;
+  }
+}

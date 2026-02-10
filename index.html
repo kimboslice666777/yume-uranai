@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>夢占い - Dream Interpreter</title>
+  <meta name="description" content="夢のキーワードを入力して、あなたの夢が持つ意味を占います。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <div class="container">
+    <header class="header">
+      <div class="moon"></div>
+      <h1 class="title">夢占い</h1>
+      <p class="subtitle">あなたの夢が伝えるメッセージを読み解きます</p>
+    </header>
+
+    <main class="main">
+      <div class="search-card">
+        <label for="dream-input" class="input-label">夢に出てきたキーワードを入力してください</label>
+        <div class="input-group">
+          <input
+            type="text"
+            id="dream-input"
+            class="dream-input"
+            placeholder="例：海、空を飛ぶ、猫…"
+            autocomplete="off"
+          >
+          <button id="search-btn" class="search-btn" type="button">
+            <span class="btn-text">占う</span>
+            <span class="btn-icon">✦</span>
+          </button>
+        </div>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+
+      <div class="result-area" id="result-area"></div>
+    </main>
+
+    <footer class="footer">
+      <p>© 2026 夢占い — 心の声に耳を傾けて</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
