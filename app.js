@@ -352,7 +352,37 @@ async function searchByAI(query) {
     }
 }
 
-// ... existing code ...
+// --- ローディング表示 ---
+function showLoading() {
+    resultArea.innerHTML = `
+    <div class="result-card loading-card">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">星の声を聞いています...</p>
+    </div>
+  `;
+}
+
+// --- 結果を表示 ---
+function renderResults(results) {
+    resultArea.innerHTML = results.map(result => `
+    <div class="result-card">
+      <div class="result-keyword">${escapeHtml(result.keyword)}</div>
+      <div class="result-category">${escapeHtml(result.category)}</div>
+      <hr class="result-divider">
+      <p class="result-meaning">${escapeHtml(result.meaning)}</p>
+      <div class="result-fortune">
+        <span class="fortune-label">運勢</span>
+        <span>
+          <span class="fortune-stars">${'★'.repeat(result.fortune)}</span><span class="fortune-empty">${'★'.repeat(5 - result.fortune)}</span>
+        </span>
+      </div>
+      <div class="result-advice">
+        <span class="advice-icon">💫</span>
+        <span class="advice-text">${escapeHtml(result.advice)}</span>
+      </div>
+    </div>
+  `).join('');
+}
 
 // --- エラー表示 ---
 function showError(query, errorMessage, errorDetails) {
