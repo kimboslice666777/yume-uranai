@@ -327,7 +327,9 @@ async function searchByAI(query) {
         const response = await fetch(`/.netlify/functions/dream?keyword=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
-            throw new Error('AI interpretation failed');
+            // Try to parse error details from JSON response
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || errorData.message || `Server Error: ${response.status}`);
         }
 
         const data = await response.json();
@@ -345,7 +347,7 @@ async function searchByAI(query) {
 
     } catch (error) {
         console.error('AI Error:', error);
-        showError(query);
+        showError(query, error.message);
     }
 }
 
@@ -382,12 +384,18 @@ function renderResults(results) {
 }
 
 // --- エラー表示 ---
-function showError(query) {
+function showError(query, errorMessage) {
     resultArea.innerHTML = `
     <div class="result-card no-result">
-      <div class="no-result-icon">🌫️</div>
-      <p class="no-result-title">霧が深くて見えません</p>
-      <p class="no-result-text">通信エラーが発生しました。<br>しばらく待ってからもう一度お試しください。</p>
+      <div class="no-result-icon">⚠️</div>
+      <p class="no-result-title">エラーが発生しました</p>
+      <p class="no-result-text" style="font-size: 0.8rem; color: #ff8888; white-space: pre-wrap;">
+        ${escapeHtml(errorMessage || '通信エラーが発生しました')}
+      </p>
+      <p class="no-result-text">
+        しばらく待ってからもう一度お試しください。<br>
+        解決しない場合は、この画面のエラーメッセージを開発者に伝えてください。
+      </p>
     </div>
   `;
 }

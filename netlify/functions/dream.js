@@ -15,21 +15,29 @@ exports.handler = async (event, context) => {
         };
     }
 
+    // Logging for debugging
+    console.log('Function invoked with keyword:', keyword);
+
     // API Key check
     const apiKey = process.env.CLAUDE_API_KEY;
     if (!apiKey) {
-        console.error('CLAUDE_API_KEY is not set');
+        console.error('Critical Error: CLAUDE_API_KEY is missing in environment variables.');
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Server configuration error' }),
+            body: JSON.stringify({
+                error: 'Configuration Error: CLAUDE_API_KEY is not set in Netlify.',
+                details: 'Please check Site Configuration > Environment variables.'
+            }),
         };
     }
 
     try {
+        console.log('Initializing Anthropic client...');
         const anthropic = new Anthropic({
             apiKey: apiKey,
         });
 
+        console.log('Sending request to Claude API...');
         const completion = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20240620",
             max_tokens: 300,
@@ -50,6 +58,7 @@ exports.handler = async (event, context) => {
             ]
         });
 
+        console.log('Claude API response received.');
         const content = completion.content[0].text;
 
         // Parse JSON from Claude's response to ensure it's valid
@@ -66,10 +75,14 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Error calling Claude API:', error);
+        console.error('Detailed Error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to interpret dream' }),
+            body: JSON.stringify({
+                error: 'AI Processing Error',
+                message: error.message,
+                stack: error.stack
+            }),
         };
     }
 };
