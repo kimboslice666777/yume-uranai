@@ -321,15 +321,16 @@ async function searchByAI(query) {
     showLoading();
 
     try {
-        // Netlify Functionsのエンドポイントを呼び出す
-        // ローカル開発時は '/.netlify/functions/dream'
-        // 本番環境でも同じパスでOK
         const response = await fetch(`/.netlify/functions/dream?keyword=${encodeURIComponent(query)}`);
 
         if (!response.ok) {
             // Try to parse error details from JSON response
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || errorData.message || `Server Error: ${response.status}`);
+
+            // Pass the full error data to the catch block
+            const error = new Error(errorData.error || errorData.message || `Server Error: ${response.status}`);
+            error.details = errorData.details; // Attach details
+            throw error;
         }
 
         const data = await response.json();
@@ -347,44 +348,26 @@ async function searchByAI(query) {
 
     } catch (error) {
         console.error('AI Error:', error);
-        showError(query, error.message);
+        showError(query, error.message, error.details);
     }
 }
 
-// --- ローディング表示 ---
-function showLoading() {
-    resultArea.innerHTML = `
-    <div class="result-card loading-card">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">星の声を聞いています...</p>
-    </div>
-  `;
-}
-
-// --- 結果を表示 ---
-function renderResults(results) {
-    resultArea.innerHTML = results.map(result => `
-    <div class="result-card">
-      <div class="result-keyword">${escapeHtml(result.keyword)}</div>
-      <div class="result-category">${escapeHtml(result.category)}</div>
-      <hr class="result-divider">
-      <p class="result-meaning">${escapeHtml(result.meaning)}</p>
-      <div class="result-fortune">
-        <span class="fortune-label">運勢</span>
-        <span>
-          <span class="fortune-stars">${'★'.repeat(result.fortune)}</span><span class="fortune-empty">${'★'.repeat(5 - result.fortune)}</span>
-        </span>
-      </div>
-      <div class="result-advice">
-        <span class="advice-icon">💫</span>
-        <span class="advice-text">${escapeHtml(result.advice)}</span>
-      </div>
-    </div>
-  `).join('');
-}
+// ... existing code ...
 
 // --- エラー表示 ---
-function showError(query, errorMessage) {
+function showError(query, errorMessage, errorDetails) {
+    let detailsHtml = '';
+    if (errorDetails) {
+        // If details is an object, stringify it
+        const detailsText = typeof errorDetails === 'object' ? JSON.stringify(errorDetails, null, 2) : errorDetails;
+        detailsHtml = `
+      <details style="margin-top: 10px; text-align: left; color: #aaa; cursor: pointer;">
+        <summary>詳細エラー (開発者用)</summary>
+        <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.7rem; color: #ffaaaa;">${escapeHtml(detailsText)}</pre>
+      </details>
+    `;
+    }
+
     resultArea.innerHTML = `
     <div class="result-card no-result">
       <div class="no-result-icon">⚠️</div>
@@ -392,6 +375,7 @@ function showError(query, errorMessage) {
       <p class="no-result-text" style="font-size: 0.8rem; color: #ff8888; white-space: pre-wrap;">
         ${escapeHtml(errorMessage || '通信エラーが発生しました')}
       </p>
+      ${detailsHtml}
       <p class="no-result-text">
         しばらく待ってからもう一度お試しください。<br>
         解決しない場合は、この画面のエラーメッセージを開発者に伝えてください。
