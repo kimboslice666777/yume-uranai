@@ -45,8 +45,15 @@ body {
 }
 
 @keyframes twinkle {
-  0% { opacity: 0.2; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1.2); }
+  0% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 /* --- Container --- */
@@ -81,8 +88,13 @@ body {
 }
 
 @keyframes moonGlow {
-  0% { box-shadow: 0 0 30px rgba(240, 192, 64, 0.4), 0 0 80px rgba(240, 192, 64, 0.15); }
-  100% { box-shadow: 0 0 50px rgba(240, 192, 64, 0.6), 0 0 120px rgba(240, 192, 64, 0.25); }
+  0% {
+    box-shadow: 0 0 30px rgba(240, 192, 64, 0.4), 0 0 80px rgba(240, 192, 64, 0.15);
+  }
+
+  100% {
+    box-shadow: 0 0 50px rgba(240, 192, 64, 0.6), 0 0 120px rgba(240, 192, 64, 0.25);
+  }
 }
 
 .title {
@@ -243,6 +255,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -356,6 +369,69 @@ body {
   font-size: 0.85rem;
   color: #6a6080;
   line-height: 1.6;
+}
+
+/* --- Loading --- */
+.loading-card {
+  text-align: center;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #f0c040;
+  border-right-color: #f0c040;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.loading-spinner::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #d4a017;
+  border-left-color: #d4a017;
+  animation: spin 2s linear infinite reverse;
+}
+
+.loading-text {
+  font-size: 0.9rem;
+  color: #9990b8;
+  letter-spacing: 0.05em;
+  animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* --- Footer --- */

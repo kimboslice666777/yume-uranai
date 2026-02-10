@@ -208,12 +208,6 @@ const DREAM_DICTIONARY = {
         fortune: 4,
         advice: '答えは意外と身近なところにあります。よく観察してみてください。'
     },
-    mirror: {
-        category: 'もの',
-        meaning: '鏡の夢は自己認識や真実の象徴です。きれいな鏡は自分を正しく理解していることを、割れた鏡は自己イメージの変化を暗示しています。',
-        fortune: 3,
-        advice: '自分自身と向き合う時間を大切にしましょう。'
-    },
     鏡: {
         category: 'もの',
         meaning: '鏡の夢は自己認識や真実の象徴です。きれいな鏡は自分を正しく理解していることを、割れた鏡は自己イメージの変化を暗示しています。',
@@ -290,7 +284,7 @@ function setupEventListeners() {
 }
 
 // --- 検索処理 ---
-function handleSearch() {
+async function handleSearch() {
     const query = dreamInput.value.trim();
 
     if (!query) {
@@ -298,12 +292,14 @@ function handleSearch() {
         return;
     }
 
-    const results = searchDream(query);
+    // 1. まず辞書から検索
+    const localResults = searchDream(query);
 
-    if (results.length > 0) {
-        renderResults(results);
+    if (localResults.length > 0) {
+        renderResults(localResults);
     } else {
-        showNoResult(query);
+        // 2. 辞書になければAIで検索
+        await searchByAI(query);
     }
 }
 
@@ -320,14 +316,57 @@ function searchDream(query) {
     return matches;
 }
 
+// --- AIによる検索 ---
+async function searchByAI(query) {
+    showLoading();
+
+    try {
+        // Netlify Functionsのエンドポイントを呼び出す
+        // ローカル開発時は '/.netlify/functions/dream'
+        // 本番環境でも同じパスでOK
+        const response = await fetch(`/.netlify/functions/dream?keyword=${encodeURIComponent(query)}`);
+
+        if (!response.ok) {
+            throw new Error('AI interpretation failed');
+        }
+
+        const data = await response.json();
+
+        // AI結果を通常の形式に変換
+        const aiResult = {
+            keyword: query,
+            category: data.category || 'AI診断',
+            meaning: data.meaning,
+            fortune: data.fortune,
+            advice: data.advice
+        };
+
+        renderResults([aiResult]);
+
+    } catch (error) {
+        console.error('AI Error:', error);
+        showError(query);
+    }
+}
+
+// --- ローディング表示 ---
+function showLoading() {
+    resultArea.innerHTML = `
+    <div class="result-card loading-card">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">星の声を聞いています...</p>
+    </div>
+  `;
+}
+
 // --- 結果を表示 ---
 function renderResults(results) {
     resultArea.innerHTML = results.map(result => `
     <div class="result-card">
-      <div class="result-keyword">${result.keyword}</div>
-      <div class="result-category">${result.category}</div>
+      <div class="result-keyword">${escapeHtml(result.keyword)}</div>
+      <div class="result-category">${escapeHtml(result.category)}</div>
       <hr class="result-divider">
-      <p class="result-meaning">${result.meaning}</p>
+      <p class="result-meaning">${escapeHtml(result.meaning)}</p>
       <div class="result-fortune">
         <span class="fortune-label">運勢</span>
         <span>
@@ -336,13 +375,24 @@ function renderResults(results) {
       </div>
       <div class="result-advice">
         <span class="advice-icon">💫</span>
-        <span class="advice-text">${result.advice}</span>
+        <span class="advice-text">${escapeHtml(result.advice)}</span>
       </div>
     </div>
   `).join('');
 }
 
-// --- 結果なし表示 ---
+// --- エラー表示 ---
+function showError(query) {
+    resultArea.innerHTML = `
+    <div class="result-card no-result">
+      <div class="no-result-icon">🌫️</div>
+      <p class="no-result-title">霧が深くて見えません</p>
+      <p class="no-result-text">通信エラーが発生しました。<br>しばらく待ってからもう一度お試しください。</p>
+    </div>
+  `;
+}
+
+// --- 結果なし表示 (フォールバック) ---
 function showNoResult(query) {
     resultArea.innerHTML = `
     <div class="result-card no-result">
@@ -366,9 +416,16 @@ function showNoInput() {
 
 // --- HTMLエスケープ ---
 function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>"']/g, function (match) {
+        switch (match) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+        }
+    });
 }
 
 // --- アプリ起動 ---
